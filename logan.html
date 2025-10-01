@@ -70,6 +70,90 @@
   }
 
   loadData();
+  <!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Logan's Results</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; background: #f4f4f4; }
+    #results { max-width: 700px; margin: auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background: #eee; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div id="results">
+    <h2>Welcome, Logan</h2>
+    <table id="dataTable">
+      <thead><tr id="headers"></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+
+    <h3>Progress Graph</h3>
+    <canvas id="progressChart"></canvas>
+  </div>
+
+<script>
+  const STUDENT_NAME = "Logan";  
+  const SHEET_URL = "https://docs.google.com/spreadsheets/d/1Ei0iymDID4dBWQhTSvdzqQqb7Kx8uWi02dWO6LVdkn8/export?format=csv";
+
+  async function loadData() {
+    const res = await fetch(SHEET_URL);
+    const text = await res.text();
+    const rows = text.split("\n").map(r => r.split(","));
+    const headers = rows[0];
+    const data = rows.slice(1).filter(r => r[0].trim() === STUDENT_NAME);
+
+    // Render headers
+    const headerRow = document.getElementById("headers");
+    headers.forEach(h => {
+      const th = document.createElement("th");
+      th.innerText = h;
+      headerRow.appendChild(th);
+    });
+
+    // Render rows
+    const body = document.getElementById("rows");
+    data.forEach(r => {
+      const tr = document.createElement("tr");
+      r.forEach(cell => {
+        const td = document.createElement("td");
+        td.innerText = cell;
+        tr.appendChild(td);
+      });
+      body.appendChild(tr);
+    });
+
+    // Build graph
+    const labels = data.map(r => r[2]); // Assessment column
+    const scores = data.map(r => parseInt(r[3])); // Score column (must be numbers)
+
+    new Chart(document.getElementById("progressChart"), {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [{
+          label: "Scores",
+          data: scores,
+          borderColor: "blue",
+          backgroundColor: "lightblue",
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true, max: 100 }
+        }
+      }
+    });
+  }
+
+  loadData();
 </script>
 </body>
 </html>
